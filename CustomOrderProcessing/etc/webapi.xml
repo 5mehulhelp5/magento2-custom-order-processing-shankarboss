@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <!-- Route for updating order status via custom API -->
+    <route url="/V1/custom-order/update-status" method="POST">
+        <service class="Vendor\CustomOrderProcessing\Api\OrderStatusUpdateInterface" method="updateStatus"/>
+        <resources>
+            <!-- This ACL resource must match one defined in acl.xml -->
+            <resource ref="Vendor_CustomOrderProcessing::update_status"/>
+        </resources>
+    </route>
+
+</routes>

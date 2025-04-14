@@ -1,0 +1,5 @@
+/vendor/
+/generated/
+/var/
+/pub/static/
+/app/etc/env.php
