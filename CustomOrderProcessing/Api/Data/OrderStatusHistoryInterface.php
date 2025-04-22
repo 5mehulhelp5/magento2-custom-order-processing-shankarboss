@@ -5,37 +5,27 @@
  * @license     Open Software License (OSL 3.0)
  * @email       bolla.shankar9@gmail.com
  */
+
+declare(strict_types=1);
+
 namespace Vendor\CustomOrderProcessing\Api\Data;
 
+/**
+ * Interface for Order Status History data.
+ */
 interface OrderStatusHistoryInterface
 {
-    public const ENTITY_ID = 'entity_id';
-    public const ORDER_ID = 'order_id';
-    public const OLD_STATUS = 'old_status';
-    public const NEW_STATUS = 'new_status';
-    public const CREATED_AT = 'created_at';
-
-    /**
-     * Get Entity ID
-     *
-     * @return int|null
-     */
-    public function getEntityId();
-
-    /**
-     * Set Entity ID
-     *
-     * @param int $entityId
-     * @return $this
-     */
-    public function setEntityId($entityId);
+    public const ORDER_ID    = 'order_id';
+    public const OLD_STATUS  = 'old_status';
+    public const NEW_STATUS  = 'new_status';
+    public const CREATED_AT  = 'created_at';
 
     /**
      * Get Order ID
      *
      * @return int
      */
-    public function getOrderId();
+    public function getOrderId(): int;
 
     /**
      * Set Order ID
@@ -43,14 +33,14 @@ interface OrderStatusHistoryInterface
      * @param int $orderId
      * @return $this
      */
-    public function setOrderId($orderId);
+    public function setOrderId(int $orderId): self;
 
     /**
      * Get Old Status
      *
      * @return string|null
      */
-    public function getOldStatus();
+    public function getOldStatus(): ?string;
 
     /**
      * Set Old Status
@@ -58,14 +48,14 @@ interface OrderStatusHistoryInterface
      * @param string $oldStatus
      * @return $this
      */
-    public function setOldStatus($oldStatus);
+    public function setOldStatus(string $oldStatus): self;
 
     /**
      * Get New Status
      *
      * @return string
      */
-    public function getNewStatus();
+    public function getNewStatus(): string;
 
     /**
      * Set New Status
@@ -73,14 +63,14 @@ interface OrderStatusHistoryInterface
      * @param string $newStatus
      * @return $this
      */
-    public function setNewStatus($newStatus);
+    public function setNewStatus(string $newStatus): self;
 
     /**
      * Get Created At
      *
-     * @return string
+     * @return string|null
      */
-    public function getCreatedAt();
+    public function getCreatedAt(): ?string;
 
     /**
      * Set Created At
@@ -88,5 +78,5 @@ interface OrderStatusHistoryInterface
      * @param string $createdAt
      * @return $this
      */
-    public function setCreatedAt($createdAt);
+    public function setCreatedAt(string $createdAt): self;
 }

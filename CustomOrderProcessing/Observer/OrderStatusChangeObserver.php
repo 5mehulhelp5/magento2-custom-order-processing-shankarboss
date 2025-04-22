@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * @package     Vendor_CustomOrderProcessing
  * @author      Shankar Bolla
@@ -10,12 +12,13 @@ namespace Vendor\CustomOrderProcessing\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
+use Vendor\CustomOrderProcessing\Api\OrderStatusHistoryRepositoryInterface;
 use Vendor\CustomOrderProcessing\Model\OrderStatusHistoryFactory;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Vendor\CustomOrderProcessing\Api\OrderStatusHistoryRepositoryInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\LocalizedException;
 
 class OrderStatusChangeObserver implements ObserverInterface
 {
@@ -47,8 +50,9 @@ class OrderStatusChangeObserver implements ObserverInterface
      *
      * @param Observer $observer The event observer
      * @return void
+     * @throws LocalizedException
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
         /** @var Order $order */
         $order = $observer->getEvent()->getOrder();
@@ -63,7 +67,13 @@ class OrderStatusChangeObserver implements ObserverInterface
             ->setOldStatus($oldStatus)
             ->setNewStatus($newStatus)
             ->setCreatedAt($this->dateTime->gmtDate());
-        $this->orderStatusHistoryRepository->save($history);
+
+        try {
+            $this->orderStatusHistoryRepository->save($history);
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to save status change history: " . $e->getMessage());
+            throw new LocalizedException(__('Unable to save the status change.'));
+        }
 
         if ($newStatus === 'shipped') {
             $this->logger->info("Order marked as shipped. Sending email...");
@@ -79,6 +89,7 @@ class OrderStatusChangeObserver implements ObserverInterface
      *
      * @param Order $order The order object
      * @return void
+     * @throws LocalizedException
      */
     protected function sendShippedEmail(Order $order): void
     {
@@ -112,6 +123,7 @@ class OrderStatusChangeObserver implements ObserverInterface
             $this->logger->info("Shipped email sent successfully.");
         } catch (\Exception $e) {
             $this->logger->error("Failed to send shipped email: " . $e->getMessage());
+            throw new LocalizedException(__('Unable to send the shipped email.'));
         }
     }
 }

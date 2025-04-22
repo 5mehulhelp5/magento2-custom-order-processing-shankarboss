@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Vendor_CustomOrderProcessing
+ * @author      Shankar Bolla
+ * @license     Open Software License (OSL 3.0)
+ * @email       bolla.shankar9@gmail.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/App/etc/routes.xsd">
+    <router id="admin">
+        <route id="orderstatushistory" frontName="orderstatushistory">
+            <module name="Vendor_CustomOrderProcessing" before="Magento_Adminhtml" />
+        </route>
+    </router>
+</config>

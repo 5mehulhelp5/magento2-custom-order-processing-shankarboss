@@ -1,4 +1,12 @@
 <?xml version="1.0"?>
+<!--
+/**
+ * @package     Vendor_CustomOrderProcessing
+ * @author      Shankar Bolla
+ * @license     Open Software License (OSL 3.0)
+ * @email       bolla.shankar9@gmail.com
+ */
+-->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="sales_order_save_after">
         <observer name="log_order_status_change" instance="Vendor\CustomOrderProcessing\Observer\OrderStatusChangeObserver"/>

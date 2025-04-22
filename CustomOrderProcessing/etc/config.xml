@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/config.xsd">
+    <default>
+        <custom_order_processing>
+            <rate_limit>
+                <enabled>1</enabled>
+                <limit_count>5</limit_count>
+                <limit_ttl>3600</limit_ttl>
+                <whitelisted_ips></whitelisted_ips>
+            </rate_limit>
+        </custom_order_processing>
+    </default>
+</config>

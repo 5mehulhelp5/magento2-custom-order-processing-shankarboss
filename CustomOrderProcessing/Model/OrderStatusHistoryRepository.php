@@ -5,44 +5,62 @@
  * @license     Open Software License (OSL 3.0)
  * @email       bolla.shankar9@gmail.com
  */
+
+declare(strict_types=1);
+
 namespace Vendor\CustomOrderProcessing\Model;
 
 use Vendor\CustomOrderProcessing\Api\OrderStatusHistoryRepositoryInterface;
+use Vendor\CustomOrderProcessing\Api\Data\OrderStatusHistoryInterface;
 use Vendor\CustomOrderProcessing\Model\ResourceModel\OrderStatusHistory as ResourceModel;
-use Magento\Framework\Exception\CouldNotSaveException;
+use Vendor\CustomOrderProcessing\Exception\OrderStatusHistorySaveException;
+use Psr\Log\LoggerInterface;
 
 class OrderStatusHistoryRepository implements OrderStatusHistoryRepositoryInterface
 {
     /**
-     * OrderStatusHistory
-     *
-     * @var Vendor\CustomOrderProcessing\Model\ResourceModel\OrderStatusHistory
+     * @var ResourceModel
      */
-    protected $resource;
+    protected ResourceModel $resource;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
 
     /**
      * Constructor
      *
-     * @param Vendor\CustomOrderProcessing\Model\ResourceModel\OrderStatusHistory $resource
+     * @param ResourceModel $resource
+     * @param LoggerInterface $logger
      */
-    public function __construct(ResourceModel $resource)
-    {
+    public function __construct(
+        ResourceModel $resource,
+        LoggerInterface $logger
+    ) {
         $this->resource = $resource;
+        $this->logger = $logger;
     }
 
     /**
-     * Save method
+     * Save order status history record
      *
-     * @param Vendor\CustomOrderProcessing\Api\Data\OrderStatusHistoryInterface $history
-     * @return void
+     * @param OrderStatusHistoryInterface $history
+     * @return OrderStatusHistoryInterface
+     * @throws OrderStatusHistorySaveException
      */
-    public function save(\Vendor\CustomOrderProcessing\Api\Data\OrderStatusHistoryInterface $history)
+    public function save(OrderStatusHistoryInterface $history): OrderStatusHistoryInterface
     {
         try {
             $this->resource->save($history);
-            return $history;
         } catch (\Exception $e) {
-            throw new CouldNotSaveException(__($e->getMessage()));
+            $this->logger->error('OrderStatusHistory save failed', [
+                'exception' => $e,
+                'data' => $history->getData()
+            ]);
+            throw new OrderStatusHistorySaveException(__('Unable to save order status history.'));
         }
+
+        return $history;
     }
 }

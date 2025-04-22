@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Vendor_CustomOrderProcessing
+ * @author      Shankar Bolla
+ * @license     Open Software License (OSL 3.0)
+ * @email       bolla.shankar9@gmail.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- Parent Menu Item -->
+        <add id="Vendor_CustomOrderProcessing::main"
+             title="Order Status History"
+             module="Vendor_CustomOrderProcessing"
+             sortOrder="50"
+             resource="Vendor_CustomOrderProcessing::main"/>
+
+        <!-- Sub Menu Item for History Grid -->
+        <add id="Vendor_CustomOrderProcessing::order_status_history"
+             title="Show History Grid"
+             module="Vendor_CustomOrderProcessing"
+             sortOrder="20"
+             parent="Vendor_CustomOrderProcessing::main"
+             action="orderstatushistory/index/index"
+             resource="Vendor_CustomOrderProcessing::order_status_history"/>
+
+        <!-- Config Menu Item -->
+        <add id="Vendor_CustomOrderProcessing::config"
+             title="Custom Order Processing Config"
+             module="Vendor_CustomOrderProcessing"
+             sortOrder="99"
+             parent="Vendor_CustomOrderProcessing::main"
+             action="adminhtml/system_config/edit/section/custom_order_processing"
+             resource="Vendor_CustomOrderProcessing::config"/>
+    </menu>
+</config>

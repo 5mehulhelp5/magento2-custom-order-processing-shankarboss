@@ -5,124 +5,89 @@
  * @license     Open Software License (OSL 3.0)
  * @email       bolla.shankar9@gmail.com
  */
+
+declare(strict_types=1);
+
 namespace Vendor\CustomOrderProcessing\Model;
 
 use Vendor\CustomOrderProcessing\Api\Data\OrderStatusHistoryInterface;
 use Magento\Framework\Model\AbstractModel;
 
+/**
+ * Class OrderStatusHistory
+ *
+ * Model for storing order status history records.
+ */
 class OrderStatusHistory extends AbstractModel implements OrderStatusHistoryInterface
 {
     /**
-     * Initialize OrderStatusHistory model
-     *
-     * @return void
+     * Initialize resource model
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         $this->_init(\Vendor\CustomOrderProcessing\Model\ResourceModel\OrderStatusHistory::class);
     }
 
     /**
-     * Get Entity ID
-     *
-     * @return int|null
+     * @inheritdoc
      */
-    public function getEntityId()
+    public function getOrderId(): int
     {
-        return $this->getData(self::ENTITY_ID);
-    }
-    
-    /**
-     * Set Entity ID
-     *
-     * @param int $entityId
-     * @return $this
-     */
-    public function setEntityId($entityId)
-    {
-        return $this->setData(self::ENTITY_ID, $entityId);
+        return (int) $this->getData(self::ORDER_ID);
     }
 
     /**
-     * Get Order ID
-     *
-     * @return int
+     * @inheritdoc
      */
-    public function getOrderId()
-    {
-        return $this->getData(self::ORDER_ID);
-    }
-    
-    /**
-     * Set Order ID
-     *
-     * @param int $orderId
-     * @return $this
-     */
-    public function setOrderId($orderId)
+    public function setOrderId($orderId): self
     {
         return $this->setData(self::ORDER_ID, $orderId);
     }
 
     /**
-     * Get Old Status
-     *
-     * @return string|null
+     * @inheritdoc
      */
-    public function getOldStatus()
+    public function getOldStatus(): ?string
     {
         return $this->getData(self::OLD_STATUS);
     }
-    
+
     /**
-     * Set Old Status
-     *
-     * @param string $oldStatus
-     * @return $this
+     * @inheritdoc
      */
-    public function setOldStatus($oldStatus)
+    public function setOldStatus($oldStatus): self
     {
         return $this->setData(self::OLD_STATUS, $oldStatus);
     }
 
     /**
-     * Get New Status
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getNewStatus()
+    public function getNewStatus(): string
     {
-        return $this->getData(self::NEW_STATUS);
+        return (string) $this->getData(self::NEW_STATUS);
     }
-    
+
     /**
-     * Set New Status
-     *
-     * @param string $newStatus
-     * @return $this
+     * @inheritdoc
      */
-    public function setNewStatus($newStatus)
+    public function setNewStatus($newStatus): self
     {
         return $this->setData(self::NEW_STATUS, $newStatus);
     }
 
     /**
-     * Get Created At
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?string
     {
-        return $this->getData(self::CREATED_AT);
+        return (string) $this->getData(self::CREATED_AT);
     }
-    
+
     /**
-     * Set Created At
-     *
-     * @param string $createdAt
-     * @return $this
+     * @inheritdoc
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt): self
     {
         return $this->setData(self::CREATED_AT, $createdAt);
     }
