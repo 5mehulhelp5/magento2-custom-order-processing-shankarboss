@@ -12,6 +12,7 @@ A Magento 2 module for custom order processing with REST API, status logging, an
 7. **Admin grid with filters and bulk operation** grid with UI component filters and bulk operations.
 8. **Unit test cases** Order process unit test cases.
 9. **Integration test cases** Order process Integration test cases.
+10. **Implemented cache functionality** Included cache management functionality
 
 ## **Installation**
 1. Copy the module to `app/code/Vendor/CustomOrderProcessing/`.
@@ -35,3 +36,4 @@ A Magento 2 module for custom order processing with REST API, status logging, an
 **Rate Limit set for API Endpoint Call**
 **Unit Tests**
 **Integration Tests**
+**Cache Implementation**

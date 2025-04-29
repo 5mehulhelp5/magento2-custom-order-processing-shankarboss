@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Vendor_CustomOrderProcessing
+ * @author      Shankar Bolla
+ * @license     Open Software License (OSL 3.0)
+ * @email       bolla.shankar9@gmail.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="vendor_customorderprocessing_cache" translate="label,description" instance="Magento\Framework\App\Cache\Type\Config">
+        <label>Custom Order Processing Cache</label>
+        <description>Cache for Vendor_CustomOrderProcessing module logic</description>
+    </type>
+</config>
+

@@ -22,12 +22,12 @@ class RateLimitPlugin
      * Constructor.
      *
      * @param RateLimiter $rateLimiter
-     * @param State $state
+     * @param State $appState
      * @return void
      */
     public function __construct(
         protected RateLimiter $rateLimiter,
-        protected State $state
+        protected State $appState
     ) {
     }
 

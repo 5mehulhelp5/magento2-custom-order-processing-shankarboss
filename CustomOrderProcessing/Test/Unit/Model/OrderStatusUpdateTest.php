@@ -1,4 +1,12 @@
 <?php
+/**
+ * Order Status Update Model
+ *
+ * @package     Vendor_CustomOrderProcessing
+ * @author      Shankar Bolla
+ * @license     Open Software License (OSL 3.0)
+ * @email       bolla.shankar9@gmail.com
+ */
 declare(strict_types=1);
 
 namespace Vendor\CustomOrderProcessing\Test\Unit\Model;
@@ -79,6 +87,15 @@ class OrderStatusUpdateTest extends TestCase
     /** @var MockObject */
     private MockObject $orderStatusHistoryRepositoryMock;
 
+    /** @var MockObject|\Magento\Framework\App\CacheInterface */
+    private MockObject $cacheMock;
+
+    /** @var MockObject */
+    private $serializerMock;
+    
+    /** @var MockObject */
+    private $configMock;
+
     protected function setUp(): void
     {
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
@@ -98,6 +115,9 @@ class OrderStatusUpdateTest extends TestCase
         $this->creditmemoManagementMock = $this->createMock(CreditmemoManagementInterface::class);
         $this->orderStatusHistoryFactoryMock = $this->createMock(OrderStatusHistoryFactory::class);
         $this->orderStatusHistoryRepositoryMock = $this->createMock(OrderStatusHistoryRepositoryInterface::class);
+        $this->cacheMock = $this->createMock(\Magento\Framework\App\CacheInterface::class);
+        $this->serializerMock = $this->createMock(\Magento\Framework\Serialize\SerializerInterface::class);
+        $this->configMock = $this->createMock(\Vendor\CustomOrderProcessing\Helper\Config::class);
 
         $this->model = new OrderStatusUpdate(
             $this->orderRepositoryMock,
@@ -114,7 +134,10 @@ class OrderStatusUpdateTest extends TestCase
             $this->creditmemoFactoryMock,
             $this->creditmemoManagementMock,
             $this->orderStatusHistoryFactoryMock,
-            $this->orderStatusHistoryRepositoryMock
+            $this->orderStatusHistoryRepositoryMock,
+            $this->cacheMock,
+            $this->serializerMock,
+            $this->configMock
         );
     }
 
@@ -127,7 +150,7 @@ class OrderStatusUpdateTest extends TestCase
 
     public function testUpdateStatusWithOrderNotFound(): void
     {
-        $orderIncrementId = '000000036';
+        $orderIncrementId = '000000042';
 
         $collectionMock = $this->createMock(Collection::class);
         $collectionMock->method('addFieldToFilter')->willReturnSelf();
@@ -149,7 +172,7 @@ class OrderStatusUpdateTest extends TestCase
 
         $orderMock = $this->createMock(Order::class);
         $orderMock->expects($this->exactly(2))->method('getStatus')
-        ->willReturnOnConsecutiveCalls($oldStatus, $newStatus);
+            ->willReturnOnConsecutiveCalls($oldStatus, $newStatus);
         $orderMock->method('canInvoice')->willReturn(true);
         $orderMock->method('getId')->willReturn(42);
         $orderMock->method('getData')->willReturn([
@@ -174,7 +197,7 @@ class OrderStatusUpdateTest extends TestCase
 
         $transactionMock = $this->createMock(Transaction::class);
         $transactionMock->expects($this->exactly(2))->method('addObject')
-        ->withConsecutive([$invoiceMock], [$orderMock])->willReturnSelf();
+            ->withConsecutive([$invoiceMock], [$orderMock])->willReturnSelf();
         $transactionMock->expects($this->once())->method('save')->willReturnSelf();
 
         $this->transactionFactoryMock->method('create')->willReturn($transactionMock);
@@ -192,7 +215,7 @@ class OrderStatusUpdateTest extends TestCase
 
         $this->responseMock->expects($this->once())->method('setData')->with([
             'success' => true,
-            'message' => __('Order status updated successfully.')->render(),
+            'message' => 'Order status updated successfully.',
             'order_id' => 42,
             'old_status' => $oldStatus,
             'new_status' => $newStatus
@@ -205,17 +228,17 @@ class OrderStatusUpdateTest extends TestCase
 
     public function testUpdateStatusToCompleteWithShipment(): void
     {
-        $orderIncrementId = '000000036';
+        $orderIncrementId = '000000042';
         $newStatus = OrderStatusUpdate::STATUS_COMPLETE;
         $oldStatus = 'processing';
 
         $orderMock = $this->createMock(Order::class);
         $orderMock->expects($this->exactly(2))->method('getStatus')
-        ->willReturnOnConsecutiveCalls($oldStatus, $newStatus);
+            ->willReturnOnConsecutiveCalls($oldStatus, $newStatus);
         $orderMock->method('canShip')->willReturn(true);
-        $orderMock->method('getId')->willReturn(36);
+        $orderMock->method('getId')->willReturn(42);
         $orderMock->method('getData')->willReturn([
-            'entity_id' => '000000036',
+            'entity_id' => '000000042',
             'status' => $oldStatus,
             'increment_id' => $orderIncrementId
         ]);
@@ -236,13 +259,13 @@ class OrderStatusUpdateTest extends TestCase
 
         $transactionMock = $this->createMock(Transaction::class);
         $transactionMock->expects($this->exactly(2))->method('addObject')
-        ->withConsecutive([$shipmentMock], [$orderMock])->willReturnSelf();
+            ->withConsecutive([$shipmentMock], [$orderMock])->willReturnSelf();
         $transactionMock->expects($this->once())->method('save')->willReturnSelf();
 
         $this->transactionFactoryMock->method('create')->willReturn($transactionMock);
 
         $historyMock = $this->createMock(\Vendor\CustomOrderProcessing\Model\OrderStatusHistory::class);
-        $historyMock->method('setOrderId')->with(36)->willReturnSelf();
+        $historyMock->method('setOrderId')->with(42)->willReturnSelf();
         $historyMock->method('setOldStatus')->with($oldStatus)->willReturnSelf();
         $historyMock->method('setNewStatus')->with($newStatus)->willReturnSelf();
         $historyMock->method('getOldStatus')->willReturn($oldStatus);
@@ -254,8 +277,8 @@ class OrderStatusUpdateTest extends TestCase
 
         $this->responseMock->expects($this->once())->method('setData')->with([
             'success' => true,
-            'message' => __('Order status updated successfully.')->render(),
-            'order_id' => 36,
+            'message' => 'Order status updated successfully.',
+            'order_id' => 42,
             'old_status' => $oldStatus,
             'new_status' => $newStatus
         ])->willReturnSelf();
@@ -267,7 +290,7 @@ class OrderStatusUpdateTest extends TestCase
 
     public function testUpdateStatusWithException(): void
     {
-        $orderIncrementId = '000000036';
+        $orderIncrementId = '000000042';
         $newStatus = 'processing';
 
         $this->orderCollectionFactoryMock->method('create')->willThrowException(new \Exception('Test exception'));

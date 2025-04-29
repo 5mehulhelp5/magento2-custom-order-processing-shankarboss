@@ -31,6 +31,9 @@ use Vendor\CustomOrderProcessing\Exception\OrderStatusUpdateException;
 use Magento\Sales\Api\CreditmemoManagementInterface;
 use Vendor\CustomOrderProcessing\Model\OrderStatusHistoryFactory;
 use Vendor\CustomOrderProcessing\Api\OrderStatusHistoryRepositoryInterface;
+use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+use Vendor\CustomOrderProcessing\Helper\Config;
 
 class OrderStatusUpdate implements OrderStatusUpdateInterface
 {
@@ -38,6 +41,8 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
     public const STATUS_PROCESSING = 'processing';
     public const STATUS_COMPLETE   = 'complete';
     public const STATUS_CLOSED     = 'closed';
+
+    private const CACHE_TAG = 'vendor_custom_order_status';
 
     /**
      * @param OrderRepositoryInterface $orderRepository
@@ -55,6 +60,9 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
      * @param CreditmemoManagementInterface $creditmemoManagement
      * @param OrderStatusHistoryFactory $orderStatusHistoryFactory
      * @param OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
+     * @param CacheInterface $cache
+     * @param SerializerInterface $serializer
+     * @param Config $config
      */
     public function __construct(
         protected OrderRepositoryInterface $orderRepository,
@@ -71,7 +79,10 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
         protected CreditmemoFactory $creditmemoFactory,
         protected CreditmemoManagementInterface $creditmemoManagement,
         protected OrderStatusHistoryFactory $orderStatusHistoryFactory,
-        protected OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
+        protected OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
+        protected CacheInterface $cache,
+        protected SerializerInterface $serializer,
+        private Config $config
     ) {
     }
 
@@ -108,16 +119,41 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
         }
 
         try {
-            $collection = $this->orderCollectionFactory->create()
-                ->addFieldToFilter('increment_id', $orderIncrementId)
-                ->setPageSize(1);
+            $cacheKey = self::CACHE_TAG . '_' . $orderIncrementId;
+            $order = null;
 
-            if ($collection->getSize() === 0) {
-                throw new LocalizedException(__('Order not found.'));
+            // Only use cache if enabled
+            if ($this->config->isCacheEnabled()) {
+                $cachedOrderData = $this->cache->load($cacheKey);
+                if ($cachedOrderData) {
+                    $orderData = $this->serializer->unserialize($cachedOrderData);
+                    $order = $this->orderRepository->get($orderData['entity_id']);
+                }
             }
 
-            /** @var Order $order */
-            $order = $collection->getFirstItem();
+            if (!$order) {
+                $collection = $this->orderCollectionFactory->create()
+                    ->addFieldToFilter('increment_id', $orderIncrementId)
+                    ->setPageSize(1);
+
+                if ($collection->getSize() === 0) {
+                    throw new LocalizedException(__('Order not found.'));
+                }
+
+                /** @var Order $order */
+                $order = $collection->getFirstItem();
+
+                // Save to cache if enabled
+                if ($this->config->isCacheEnabled()) {
+                    $this->cache->save(
+                        $this->serializer->serialize(['entity_id' => (int)$order->getId()]),
+                        $cacheKey,
+                        [self::CACHE_TAG],
+                        $this->config->getCacheLifetime()
+                    );
+                }
+            }
+
             $oldStatus = $order->getStatus();
 
             if ($newStatus === self::STATUS_PROCESSING && $order->canInvoice()) {
@@ -137,6 +173,11 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
             $order->addStatusHistoryComment(__('Order status updated via API to "%1".', $newStatus));
             $this->orderRepository->save($order);
 
+            // Invalidate cache if enabled
+            if ($this->config->isCacheEnabled()) {
+                $this->cache->remove($cacheKey);
+            }
+
             $historyModel = $this->orderStatusHistoryFactory->create();
             $historyModel->setOrderId((int) $order->getId());
             $historyModel->setOldStatus($oldStatus);
@@ -145,7 +186,7 @@ class OrderStatusUpdate implements OrderStatusUpdateInterface
 
             return $this->responseFactory->setData([
                 'success'    => true,
-                'message'    => __('Order status updated successfully.')->render(),
+                'message'    => (string)__('Order status updated successfully.'),
                 'order_id'   => (int)$order->getId(),
                 'old_status' => $historyModel->getOldStatus(),
                 'new_status' => $order->getStatus()

@@ -73,4 +73,20 @@
         </arguments>
     </type>
 
+    <!-- Add custom cache type -->
+    <type name="Magento\Framework\App\Cache\TypeListInterface">
+        <arguments>
+            <argument name="types" xsi:type="array">
+                <item name="vendor_customorderprocessing_cache" xsi:type="object">Magento\Framework\App\Cache\Type\Config</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Vendor\CustomOrderProcessing\Model\OrderStatusUpdate">
+        <arguments>
+            <argument name="cache" xsi:type="object">Magento\Framework\App\CacheInterface</argument>
+        </arguments>
+    </type>
+    <preference for="Magento\Framework\App\CacheInterface" type="Magento\Framework\App\Cache\Proxy" />
+    <preference for="Magento\Framework\Serialize\SerializerInterface" type="Magento\Framework\Serialize\Serializer\Json" />
+
 </config>
